@@ -5,126 +5,130 @@ const fs = require("fs");
 require('dotenv').config()
 
 describe('As part of the sql refresh workshop', () => {
-	
-	const DATABASE_URL = process.env.DATABASE_URL;
 
-	const pgp = PgPromise({});
-	const db = pgp(DATABASE_URL);
+    const DATABASE_URL = process.env.DATABASE_URL;
 
-	// we are explicitly not using an arrow function here to support this.timeout
-	before(async function (){
-		this.timeout(5000);
-		await db.none(`delete from garment`);
-		const commandText = fs.readFileSync('./sql/data.sql', 'utf-8');
-		await db.none(commandText)
-	});
+    const pgp = PgPromise({});
+    const db = pgp(DATABASE_URL);
 
-	it('you should create a garment table in the database', async () => {
+    // we are explicitly not using an arrow function here to support this.timeout
+    before(async function() {
+        this.timeout(5000);
+        await db.none(`delete from garment`);
+        const commandText = fs.readFileSync('./sql/data.sql', 'utf-8');
+        await db.none(commandText)
+    });
 
-		// use db.one
+    it('you should create a garment table in the database', async() => {
 
-		// no changes below this line in this function
-		assert.ok(result.count);
-	});
+        // use db.one
+        const result = await db.one('select count(*) from garment');
 
-	it('there should be 11 garments in the garment table - added using the supplied script', async () => {
+        // no changes below this line in this function
+        assert.ok(result.count);
+    });
 
-		// use db.one as 1 result us expected
+    it('there should be 30 garments in the garment table - added using the supplied script', async() => {
 
-		// no changes below this line in this function
+        // use db.one as 1 result us expected
+        const result = await db.one('select count(*) from garment');
+        // no changes below this line in this function
 
-		assert.equal(30, result.count);
-	});
+        assert.equal(30, result.count);
+    });
 
-	it('you should be able to find all the Summer garments', async () => {
-		// add some code below
+    it('you should be able to find all the Summer garments', async() => {
+        // add some code below
+        const result = await db.one("select count(*) from garment where season = 'Summer'");
+        // no changes below this line in this function
+        assert.equal(12, result.count);
+    });
 
-		// no changes below this line in this function
-		assert.equal(12, result.count);
-	});
+    it('you should be able to find all the Winter garments', async() => {
+        // add some code below
+        const result = await db.one("select count(*) from garment where season = 'Winter'");
+        // no changes below this line in this function
+        assert.equal(5, result.count);
+    });
 
-	it('you should be able to find all the Winter garments', async () => {
-		// add some code below
+    it('you should be able to find all the Winter Male garments', async() => {
+        // change the code statement below
+        const result = await db.one("select count(*) from garment where season = 'Winter' and gender = 'Male'");
+        // no changes below this line in this function
+        assert.equal(3, result.count);
+    });
 
-		// no changes below this line in this function
-		assert.equal(5, result.count);
-	});
+    it('you should be able to change a given Male garment to a Unisex garment', async() => {
 
-	it('you should be able to find all the Winter Male garments', async () => {
-		// change the code statement below
+        // use db.one with an update sql statement
+        await db.none("Update garment set gender = 'Unisex' where description = 'Red hooded jacket'")
+            // write your code above this line
 
-		// no changes below this line in this function
-		assert.equal(3, result.count);
-	});
+        const gender_sql = 'select gender from garment where description = $1'
+        const gender = await db.one(gender_sql, ['Red hooded jacket'], r => r.gender);
+        assert.equal('Unisex', gender);
 
-	it('you should be able to change a given Male garment to a Unisex garment', async () => {
+    });
 
-		// use db.one with an update sql statement
+    it('you should be able to add 2 Male & 3 Female garments', async() => {
 
-		// write your code above this line
-		
-		const gender_sql = 'select gender from garment where description = $1'
-		const gender = await db.one(gender_sql, ['Red hooded jacket'], r => r.gender);
-		assert.equal('Unisex', gender);
+        // use db.none - change code below here...
+        await db.none("insert into garment(description, img, season, gender, price) values ('Red Shirt', 'womans-128x128-455144.png', 'All Seasons', 'Male', '199.99')")
+        await db.none("insert into garment(description, img, season, gender, price) values ('Blue Bomber', 'mens-128x128-455133.png', 'All Seasons', 'Male', '699.99')")
+        await db.none("insert into garment(description, img, season, gender, price) values ('Short Skirt(Lime)', 'skirt-128x128-455130.png', 'Summer', 'Female', '199.99')")
+        await db.none("insert into garment(description, img, season, gender, price) values ('Blazer', 'womans-128x128-455136.png', 'All Seasons', 'Female', '399.99')")
+        await db.none("insert into garment(description, img, season, gender, price) values ('Lime Dress(Long)', 'womans-128x128-455140.png', 'Summer', 'Female', '399.99')")
 
-	});
+        // write your code above this line
 
-	it('you should be able to add 2 Male & 3 Female garments', async () => {
+        const gender_count_sql = 'select count(*) from garment where gender = $1'
+        const maleCount = await db.one(gender_count_sql, ['Male'], r => r.count);
+        const femaleCount = await db.one(gender_count_sql, ['Female'], r => r.count);
 
-		// use db.none - change code below here...
+        // went down 1 as the previous test is changing a male garment to a female one
+        assert.equal(15, maleCount);
+        assert.equal(16, femaleCount);
+    });
 
+    it('you should be group garments by gender and count them', async() => {
 
-		// write your code above this line
+        // and below this line for this function will
+        const garmentsGrouped = await db.many("select count(*), gender from garment group by gender")
+            // write your code above this line
 
-		const gender_count_sql = 'select count(*) from garment where gender = $1'
-		const maleCount = await db.one(gender_count_sql, ['Male'], r => r.count);
-		const femaleCount = await db.one(gender_count_sql, ['Female'], r => r.count);
+        const expectedResult = [{
+                count: '15',
+                gender: 'Male'
+            },
+            {
+                count: '16',
+                gender: 'Female'
+            },
+            {
+                count: '4',
+                gender: 'Unisex'
+            }
+        ]
+        assert.deepStrictEqual(expectedResult, garmentsGrouped)
+    });
 
-		// went down 1 as the previous test is changing a male garment to a female one
-		assert.equal(15, maleCount);
-		assert.equal(16, femaleCount);
-	});
+    it('you should be able to remove all the Unisex garments', async() => {
 
-	it('you should be group garments by gender and count them', async () => {
+        // and below this line for this function will
+        await db.none("delete from garment where gender = 'Unisex'")
+            // write your code above this line
 
-		// and below this line for this function will
+        const gender_count_sql = 'select count(*) from garment where gender = $1'
+        const unisexCount = await db.one(gender_count_sql, ['Unisex'], r => r.count);
 
-		// write your code above this line
-
-		const expectedResult = [
-			  {
-			    count: '15',
-			    gender: 'Male'
-			  },
-			  {
-			    count: '16',
-			    gender: 'Female'
-			  },
-			  {
-			    count: '4',
-			    gender: 'Unisex'
-			  }
-			]
-		assert.deepStrictEqual(expectedResult, garmentsGrouped)
-	});
-
-	it('you should be able to remove all the Unisex garments', async () => {
-
-		// and below this line for this function will
-
-		// write your code above this line
-
-		const gender_count_sql = 'select count(*) from garment where gender = $1'
-		const unisexCount = await db.one(gender_count_sql, ['Unisex'], r => r.count);
-
-		assert.equal(0, unisexCount)
-	});
+        assert.equal(0, unisexCount)
+    });
 
 
-	
-	after(async () => {
-		db.$pool.end();
-	});
+
+    after(async() => {
+        db.$pool.end();
+    });
 
 
 }).timeout(5000);
