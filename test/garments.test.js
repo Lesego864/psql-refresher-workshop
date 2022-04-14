@@ -61,8 +61,8 @@ describe('As part of the sql refresh workshop', () => {
     it('you should be able to change a given Male garment to a Unisex garment', async() => {
 
         // use db.one with an update sql statement
-        await db.none("Update garment set gender = 'Unisex' where description = 'Red hooded jacket'")
-            // write your code above this line
+        await db.none("Update garment set gender = 'Unisex' where description = 'Red hooded jacket'");
+        // write your code above this line
 
         const gender_sql = 'select gender from garment where description = $1'
         const gender = await db.one(gender_sql, ['Red hooded jacket'], r => r.gender);
@@ -73,11 +73,11 @@ describe('As part of the sql refresh workshop', () => {
     it('you should be able to add 2 Male & 3 Female garments', async() => {
 
         // use db.none - change code below here...
-        await db.none("insert into garment(description, img, season, gender, price) values ('Red Shirt', 'womans-128x128-455144.png', 'All Seasons', 'Male', '199.99')")
-        await db.none("insert into garment(description, img, season, gender, price) values ('Blue Bomber', 'mens-128x128-455133.png', 'All Seasons', 'Male', '699.99')")
-        await db.none("insert into garment(description, img, season, gender, price) values ('Short Skirt(Lime)', 'skirt-128x128-455130.png', 'Summer', 'Female', '199.99')")
-        await db.none("insert into garment(description, img, season, gender, price) values ('Blazer', 'womans-128x128-455136.png', 'All Seasons', 'Female', '399.99')")
-        await db.none("insert into garment(description, img, season, gender, price) values ('Lime Dress(Long)', 'womans-128x128-455140.png', 'Summer', 'Female', '399.99')")
+        await db.none("insert into garment(description, img, season, gender, price) values ('Red Shirt', 'womans-128x128-455144.png', 'All Seasons', 'Male', '199.99')");
+        await db.none("insert into garment(description, img, season, gender, price) values ('Blue Bomber', 'mens-128x128-455133.png', 'All Seasons', 'Male', '699.99')");
+        await db.none("insert into garment(description, img, season, gender, price) values ('Short Skirt(Lime)', 'skirt-128x128-455130.png', 'Summer', 'Female', '199.99')");
+        await db.none("insert into garment(description, img, season, gender, price) values ('Blazer', 'womans-128x128-455136.png', 'All Seasons', 'Female', '399.99')");
+        await db.none("insert into garment(description, img, season, gender, price) values ('Lime Dress(Long)', 'womans-128x128-455140.png', 'Summer', 'Female', '399.99')");
 
         // write your code above this line
 
@@ -93,8 +93,8 @@ describe('As part of the sql refresh workshop', () => {
     it('you should be group garments by gender and count them', async() => {
 
         // and below this line for this function will
-        const garmentsGrouped = await db.many("select count(*), gender from garment group by gender")
-            // write your code above this line
+        const garmentsGrouped = await db.many("select count(*), gender from garment group by gender");
+        // write your code above this line
 
         const expectedResult = [{
                 count: '15',
@@ -115,8 +115,8 @@ describe('As part of the sql refresh workshop', () => {
     it('you should be able to remove all the Unisex garments', async() => {
 
         // and below this line for this function will
-        await db.none("delete from garment where gender = 'Unisex'")
-            // write your code above this line
+        await db.none("delete from garment where gender = 'Unisex'");
+        // write your code above this line
 
         const gender_count_sql = 'select count(*) from garment where gender = $1'
         const unisexCount = await db.one(gender_count_sql, ['Unisex'], r => r.count);
